@@ -55,13 +55,11 @@ public class ParseJSON {
 	public static boolean doRequestToArduino(String url){
 		JSONObject jsonChannels = getHttpJson(url);
 		try{
-			String status = jsonChannels.optString("status");
+			String status = jsonChannels.optString("processed");
 			if(status.length() > 0){
 				Log.i(LOG_TAG, "status " + status);
-				if(status == "ok")
+				if(status.compareToIgnoreCase("ok")==0)
 					return true; 
-			}else{
-				return false;
 			}
 			
 		}catch(Exception e){

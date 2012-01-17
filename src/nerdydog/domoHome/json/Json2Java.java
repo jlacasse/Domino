@@ -6,8 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;;
 
 /**
 *formatting a JSON response into Map and List
@@ -31,7 +32,7 @@ private static final int TIMEOUT = 5000; // 5 seconds timeout
 protected List<Object> getList(String jsonResponse) throws Exception {
   List<Object> listResponse = new ArrayList<Object>();
   if (jsonResponse.startsWith("[")) {
-    JSONArray jsonArray = JSONArray.fromObject(jsonResponse);
+    JSONArray jsonArray = new JSONArray(jsonResponse);//JSONArray.fromObject(jsonResponse);
     toJavaList(jsonArray, listResponse);
   } else {
     throw new Exception("MalFormed JSON Array Response.");
@@ -48,8 +49,8 @@ protected List<Object> getList(String jsonResponse) throws Exception {
 protected Map<String, Object> getMap(String jsonResponse ) throws Exception {
   Map<String, Object> mapResponse = new HashMap<String, Object>();
   if (jsonResponse.startsWith("{")) {
-    JSONObject jsonObj = JSONObject.fromObject(jsonResponse);
-    
+    //org.json.JSONObject jsonObj = JSONObject.fromObject(jsonResponse);
+	JSONObject jsonObj = new JSONObject(jsonResponse);
     toJavaMap(jsonObj, mapResponse);
   } else {
     throw new Exception("MalFormed JSON Array Response.");
@@ -68,7 +69,10 @@ private static void toJavaMap(JSONObject o, Map<String, Object> b) {
   Iterator ji = o.keys();
   while (ji.hasNext()) {
     String key = (String) ji.next();
-    Object val = o.get(key);
+    Object val;
+	try {
+		val = o.get(key);
+	
     if (val.getClass() == JSONObject.class) {
       Map<String, Object> sub = new HashMap<String, Object>();
       toJavaMap((JSONObject) val, sub);
@@ -76,9 +80,9 @@ private static void toJavaMap(JSONObject o, Map<String, Object> b) {
     } else if (val.getClass() == JSONArray.class) {
       List<Object> l = new ArrayList<Object>();
       JSONArray arr = (JSONArray) val;
-      for (int a = 0; a < arr.size(); a++) {
+      for (int a = 0; a < arr.length(); a++) {
         Map<String, Object> sub = new HashMap<String, Object>();
-        Object element = arr.get(a);
+        Object element = arr.get(a); 
         if (element instanceof JSONObject) {
           toJavaMap((JSONObject) element, sub);
           l.add(sub);
@@ -90,6 +94,10 @@ private static void toJavaMap(JSONObject o, Map<String, Object> b) {
     } else {
       b.put(key, val);
     }
+	} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
   }
 }
 
@@ -102,8 +110,11 @@ private static void toJavaMap(JSONObject o, Map<String, Object> b) {
 **/
 private static void toJavaList(JSONArray ar, List<Object> ll) {
   int i = 0;
-  while (i < ar.size()) {
-    Object val = ar.get(i);
+  while (i < ar.length()) {
+    Object val;
+	try {
+		val = ar.get(i);
+	
     if (val.getClass() == JSONObject.class) {
       Map<String, Object> sub = new HashMap<String, Object>();
       toJavaMap((JSONObject) val, sub);
@@ -111,7 +122,7 @@ private static void toJavaList(JSONArray ar, List<Object> ll) {
     } else if (val.getClass() == JSONArray.class) {
       List<Object> l = new ArrayList<Object>();
       JSONArray arr = (JSONArray) val;
-      for (int a = 0; a < arr.size(); a++) {
+      for (int a = 0; a < arr.length(); a++) {
         Map<String, Object> sub = new HashMap<String, Object>();
         Object element = arr.get(a);
         if (element instanceof JSONObject) {
@@ -125,6 +136,10 @@ private static void toJavaList(JSONArray ar, List<Object> ll) {
     } else {
       ll.add(val);
     }
+	} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     i++;
   }
 }
